@@ -4,6 +4,8 @@ go 1.21.2
 
 require github.com/jackc/pgx v3.6.2+incompatible
 
+require github.com/mattn/go-sqlite3 v1.14.22 // indirect
+
 require (
 	github.com/bytedance/sonic v1.11.3 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
