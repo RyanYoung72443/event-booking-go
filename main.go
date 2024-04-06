@@ -1,15 +1,15 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
+	"example.com/event-booking/db"
 	"example.com/event-booking/models"
 	"github.com/gin-gonic/gin"
-	"github.com/gofrs/uuid/v5"
 )
 
 func main() {
+	db.InitDB()
 	server := gin.Default()
 
 	server.GET("/events", getEvents)
@@ -19,7 +19,11 @@ func main() {
 }
 
 func getEvents(context *gin.Context) {
-	events := models.GetAllEvents()
+	events, err := models.GetAllEvents()
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not fetch events. Try again later."})
+		return
+	}
 	context.JSON(http.StatusOK, events)
 }
 
@@ -28,19 +32,16 @@ func createEvent(context *gin.Context) {
 	err := context.ShouldBindJSON(&event)
 
 	if err != nil {
-		fmt.Println(err)
 		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse request data."})
 		return
 	}
 
-	userId, err := uuid.NewV4()
-
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse request data."})
-		return
-	}
 	event.ID = 1
-	event.UserID = userId
-	event.Save()
+	event.UserID = 1
+	err = event.Save()
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not create event. Try again later."})
+		return
+	}
 	context.JSON(http.StatusCreated, gin.H{"message": "Event created", "event": event})
 }
