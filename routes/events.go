@@ -1,10 +1,12 @@
 package routes
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"example.com/event-booking/models"
+	"example.com/event-booking/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -36,16 +38,22 @@ func getEvent(context *gin.Context) {
 }
 
 func createEvent(context *gin.Context) {
+	userId, err := checkIsAuthorized(context)
+
+	if err != nil {
+		context.JSON(http.StatusUnauthorized, gin.H{"message": "Not authorized"})
+		return
+	}
+
 	var event models.Event
-	err := context.ShouldBindJSON(&event)
+	err = context.ShouldBindJSON(&event)
 
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse request data."})
 		return
 	}
 
-	event.ID = 1
-	event.UserID = 1
+	event.UserID = userId
 	err = event.Save()
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not create event. Try again later."})
@@ -94,4 +102,19 @@ func deleteEvent(context *gin.Context) {
 		return
 	}
 	context.JSON(http.StatusOK, gin.H{"message": "Event deleted successfully!"})
+}
+
+func checkIsAuthorized(context *gin.Context) (int64, error) {
+	token := context.Request.Header.Get("Authorization")
+
+	if token == "" {
+		return 0, errors.New("No token")
+	}
+
+	userId, err := utils.VerifyToken(token)
+
+	if err != nil {
+		return 0, errors.New("No token")
+	}
+	return userId, nil
 }
