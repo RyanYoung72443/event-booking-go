@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func getEventById(context *gin.Context) (*models.Event, error) {
+func GetEventById(context *gin.Context) (*models.Event, error) {
 	eventId, err := strconv.ParseInt(context.Param("id"), 10, 64)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse event id."})
@@ -27,7 +27,7 @@ func getEvents(context *gin.Context) {
 }
 
 func getEvent(context *gin.Context) {
-	event, err := getEventById(context)
+	event, err := GetEventById(context)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not fetch event. Try again later."})
 		return
@@ -55,7 +55,7 @@ func createEvent(context *gin.Context) {
 }
 
 func updateEvent(context *gin.Context) {
-	event, err := getEventById(context)
+	event, err := GetEventById(context)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not fetch event. Try again later."})
@@ -86,7 +86,7 @@ func updateEvent(context *gin.Context) {
 }
 
 func deleteEvent(context *gin.Context) {
-	event, err := getEventById(context)
+	event, err := GetEventById(context)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not fetch event. Try again later."})
