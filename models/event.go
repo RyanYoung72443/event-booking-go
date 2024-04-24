@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"example.com/event-booking/db"
@@ -111,4 +112,15 @@ func (e Event) Register(userId int64) error {
 	_, err = stmt.Exec(e.ID, userId)
 
 	return err
+}
+
+func (e Event) CheckIfUserIsRegistered(userId int64) error {
+	query := "SELECT id FROM registrations WHERE user_id = ? AND event_id = ?"
+	row := db.DB.QueryRow(query, userId, e.ID)
+	var id int64
+	err := row.Scan(&id)
+	if err != nil {
+		return nil
+	}
+	return errors.New("user registered")
 }

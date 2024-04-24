@@ -15,6 +15,13 @@ func registerForEvent(context *gin.Context) {
 		return
 	}
 
+	err = event.CheckIfUserIsRegistered(userId)
+	if err != nil {
+		fmt.Println(err)
+		context.JSON(http.StatusConflict, gin.H{"message": "User already registered for event."})
+		return
+	}
+
 	err = event.Register(userId)
 	if err != nil {
 		fmt.Println(err)
