@@ -124,3 +124,45 @@ func (e Event) CheckIfUserIsRegistered(userId int64) error {
 	}
 	return errors.New("user registered")
 }
+
+func (e Event) CheckRegistrations() ([]string, error) {
+	registrationQuery := "SELECT user_id FROM registrations WHERE event_id = ?"
+	regRows, err := db.DB.Query(registrationQuery, e.ID)
+	if err != nil {
+		return nil, err
+	}
+	defer regRows.Close()
+
+	var registeredUserIds []int64
+
+	for regRows.Next() {
+		var user_id int64
+		err := regRows.Scan(&user_id)
+		if err != nil {
+			return nil, err
+		}
+
+		registeredUserIds = append(registeredUserIds, user_id)
+	}
+
+	usersQuery := "SELECT email FROM users WHERE id = ?"
+	stmt, err := db.DB.Prepare(usersQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	var registeredUsers []string
+
+	for id := range registeredUserIds {
+		var user_email string
+		err := stmt.QueryRow(id).Scan(&user_email)
+		if err != nil {
+			continue
+		}
+
+		registeredUsers = append(registeredUsers, user_email)
+	}
+
+	return registeredUsers, nil
+}

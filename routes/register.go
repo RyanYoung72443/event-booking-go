@@ -33,3 +33,20 @@ func registerForEvent(context *gin.Context) {
 }
 
 func cancelRegistration(context *gin.Context) {}
+
+func getRegisteredUsers(context *gin.Context) {
+	event, err := GetEventById(context)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not find event."})
+		return
+	}
+
+	registerUsers, err := event.CheckRegistrations()
+	if err != nil {
+		fmt.Println(err)
+		context.JSON(http.StatusConflict, gin.H{"message": "User already registered for event."})
+		return
+	}
+
+	context.JSON(http.StatusOK, registerUsers)
+}
